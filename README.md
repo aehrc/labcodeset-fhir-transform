@@ -1,3 +1,5 @@
+https://github.com/aehrc/labcodeset-fhir-transform/workflows/Labcodeset+transform+build/badge.svg
+
 # Labcodeset to FHIR transformation
 
 A stand-alone command-line tool that transforms Nederlandse Labcodeset XML to a collection of FHIR resources, specifically
