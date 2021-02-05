@@ -49,6 +49,14 @@
     <url>https://github.com/aehrc/labcodeset-fhir-transform/actions</url>
   </ciManagement>
 
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub Packages</name>
+      <url>https://maven.pkg.github.com/aehrc/labcodeset-fhir-transform</url>
+    </repository>
+  </distributionManagement>
+  
   <properties>
     <java.version>11</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
