@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>au.csiro</groupId>
+  <artifactId>labcodeset-fhir-transform</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <name>Nederlandse Labcodeset XML to FHIR Terminology Transforms</name>
+
+  <organization>
+    <name>Australian e-Health Research Centre, CSIRO</name>
+    <url>https://aehrc.com/</url>
+  </organization>
+
+  <developers>
+    <developer>
+      <name>Ming Zhang</name>
+      <email>ming.zhang2@csiro.au</email>
+    </developer>
+    <developer>
+      <name>Dion McMurtrie</name>
+      <email>dion.mcmurtrie@csiro.au</email>
+      <url>https://github.com/dionmcm</url>
+    </developer>
+  </developers>
+  <licenses>
+    <license>
+      <name>CSIRO Open Source Software Licence Agreement</name>
+      <comments>Variation of the BSD/MIT License</comments>
+      <url>https://github.com/aehrc/labcodeset-fhir-transform/raw/master/LICENSE.md</url>
+    </license>
+  </licenses>
+
+  <scm>
+    <url>https://github.com/aehrc/labcodeset-fhir-transform</url>
+    <developerConnection>scm:git:https://github.com/aehrc/labcodeset-fhir-transform.git</developerConnection>
+  </scm>
+  <issueManagement>
+    <system>GitHub Issues</system>
+    <url>https://github.com/aehrc/labcodeset-fhir-transform/issues</url>
+  </issueManagement>
+  <ciManagement>
+    <system>GitHub Actions</system>
+    <url>https://github.com/aehrc/labcodeset-fhir-transform/actions</url>
+  </ciManagement>
+
+  <properties>
+    <java.version>11</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <hapi.version>5.2.1</hapi.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.8.6</version>
+    </dependency>
+
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <version>2.8.0</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-cli</groupId>
+      <artifactId>commons-cli</artifactId>
+      <version>1.4</version>
+    </dependency>
+
+    <dependency>
+      <groupId>ca.uhn.hapi.fhir</groupId>
+      <artifactId>hapi-fhir-base</artifactId>
+      <version>${hapi.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>ca.uhn.hapi.fhir</groupId>
+      <artifactId>hapi-fhir-client</artifactId>
+      <version>${hapi.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>ca.uhn.hapi.fhir</groupId>
+      <artifactId>hapi-fhir-structures-r4</artifactId>
+      <version>${hapi.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>2.3.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <version>2.3.3</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.sun.activation</groupId>
+      <artifactId>jakarta.activation</artifactId>
+      <version>2.0.0</version>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>labcodeset-transforms</finalName>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.1</version>
+        <configuration>
+          <release>${java.version}</release>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <archive>
+                <manifest>
+                  <mainClass>
+                    au.csiro.fhir.transforms.LabcodesetFhirTransform
+                  </mainClass>
+                </manifest>
+              </archive>
+              <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>jaxb2-maven-plugin</artifactId>
+        <version>2.4</version>
+        <executions>
+          <execution>
+            <id>xjc</id>
+            <goals>
+              <goal>xjc</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <sources>
+            <source>src/main/resources/labcodeset.xsd</source>
+          </sources>
+          <outputDirectory>${basedir}/target/generated-sources</outputDirectory>
+          <clearOutputDir>false</clearOutputDir>
+          <packageName>au.csiro.fhir.transform.xml.nl.labcodeset</packageName>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-xjc</artifactId>
+            <version>2.3.0</version>
+          </dependency>
+          <dependency>
+            <groupId>com.sun.activation</groupId>
+            <artifactId>jakarta.activation</artifactId>
+            <version>1.2.1</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>licenses</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-clean-plugin</artifactId>
+            <configuration>
+              <filesets>
+                <fileset>
+                  <directory>${project.basedir}</directory>
+                  <includes>
+                    <include>LICENSE.md</include>
+                  </includes>
+                </fileset>
+                <fileset>
+                  <directory>${project.basedir}/licenses</directory>
+                </fileset>
+              </filesets>
+            </configuration>
+            <groupId>org.apache.maven.plugins</groupId>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>add-third-party</id>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>add-third-party</goal>
+                </goals>
+                <configuration>
+                  <excludedGroups>^au\.csiro\.</excludedGroups>
+                  <fileTemplate>src/main/resources/license-template.ftl</fileTemplate>
+                  <includeTransitiveDependencies>false</includeTransitiveDependencies>
+                  <licenseMerges>
+                    <licenseMerge>Apache 2.0|Apache License, Version
+                      2.0|The Apache Software License, Version
+                      2.0|Apache Software License, Version 2.0|Apache
+                      Software License 2.0</licenseMerge>
+                    <licenseMerge>Eclipse Distribution License - v
+                      1.0|EDL
+                      1.0</licenseMerge>
+                  </licenseMerges>
+                  <thirdPartyFilename>LICENSE.md</thirdPartyFilename>
+                </configuration>
+              </execution>
+              <execution>
+                <id>download-licenses</id>
+                <phase>generate-resources</phase>
+                <goals>
+                  <goal>download-licenses</goal>
+                </goals>
+                <configuration>
+                  <includeTransitiveDependencies>false</includeTransitiveDependencies>
+                  <excludedGroups>^au\.csiro\.</excludedGroups>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-resources-plugin</artifactId>
+            <executions>
+              <execution>
+                <configuration>
+                  <outputDirectory>${project.basedir}</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>target/generated-sources/license</directory>
+                      <includes>
+                        <include>LICENSE.md</include>
+                      </includes>
+                    </resource>
+                  </resources>
+                </configuration>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <id>copy-license</id>
+                <phase>package</phase>
+              </execution>
+              <execution>
+                <configuration>
+                  <outputDirectory>${project.basedir}/licenses</outputDirectory>
+                  <resources>
+                    <resource>
+                      <directory>target/generated-resources/licenses</directory>
+                    </resource>
+                  </resources>
+                </configuration>
+                <goals>
+                  <goal>copy-resources</goal>
+                </goals>
+                <id>copy-third-party-licenses</id>
+                <phase>package</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>
