@@ -7,7 +7,7 @@
 
   <groupId>au.csiro</groupId>
   <artifactId>labcodeset-fhir-transform</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>1.0.0</version>
   <packaging>jar</packaging>
 
   <name>Nederlandse Labcodeset XML to FHIR Terminology Transforms</name>
