@@ -1,4 +1,4 @@
-https://github.com/aehrc/labcodeset-fhir-transform/workflows/Labcodeset%20transform%20build/badge.svg
+![Labcodeset transform build](https://github.com/aehrc/labcodeset-fhir-transform/workflows/Labcodeset%20transform%20build/badge.svg)
 
 # Labcodeset to FHIR transformation
 
