@@ -22,6 +22,8 @@ A stand-alone command-line tool that transforms Nederlandse Labcodeset XML to a 
 
 This will build a file called ./target/labcodeset-transforms-jar-with-dependencies.jar
 
+If you just want to run it, you can simply download the labcodeset-transforms-jar-with-dependencies.jar from the [prebuilt release packages](https://github.com/orgs/aehrc/packages?repo_name=labcodeset-fhir-transform) and skip to the next step.
+
 ## Run
 
 The program requires a few command line parameters to execute, they are desribed by the usage message if you don't supply the correct parameters.
