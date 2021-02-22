@@ -7,7 +7,7 @@
 
   <groupId>au.csiro</groupId>
   <artifactId>labcodeset-fhir-transform</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
   <packaging>jar</packaging>
 
   <name>Nederlandse Labcodeset XML to FHIR Terminology Transforms</name>
@@ -56,7 +56,7 @@
       <url>https://maven.pkg.github.com/aehrc/labcodeset-fhir-transform</url>
     </repository>
   </distributionManagement>
-  
+
   <properties>
     <java.version>11</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -114,6 +114,14 @@
       <version>2.0.0</version>
       <scope>runtime</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>1.7.28</version>
+      <scope>runtime</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
