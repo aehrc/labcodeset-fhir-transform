@@ -20,8 +20,6 @@ import org.hl7.fhir.r4.model.ValueSet.ConceptSetComponent;
 import org.hl7.fhir.r4.model.ValueSet.ValueSetComposeComponent;
 import au.csiro.fhir.transform.xml.nl.labcodeset.LabConcept;
 import au.csiro.fhir.transform.xml.nl.labcodeset.LabConcept.Materials.Material;
-import au.csiro.fhir.transform.xml.nl.labcodeset.MaterialDefinition;
-import au.csiro.fhir.transform.xml.nl.labcodeset.MaterialOrMethodStatus;
 import au.csiro.fhir.transform.xml.nl.labcodeset.Publication;
 import au.csiro.fhir.transforms.utility.Constants;
 import au.csiro.fhir.transforms.utility.TerminologyClient;
@@ -43,7 +41,7 @@ public class MaterialsResourceGenerator {
   private String labcodesetVersion;
   private String loincVersion;
   private TerminologyClient terminologyClient;
-  private Map<String, MaterialDefinition> materialsMap;
+  private Map<String, Material> materialsMap;
 
   /**
    * @param labcodesetVersion version of the Labcodeset being transformed
@@ -53,7 +51,7 @@ public class MaterialsResourceGenerator {
    * @param materialsMap Map of the materials references and their details in the Labcodeset file
    */
   public MaterialsResourceGenerator(String labcodesetVersion, String loincVersion, TerminologyClient terminologyClient,
-      Map<String, MaterialDefinition> materialsMap) {
+      Map<String, Material> materialsMap) {
     this.labcodesetVersion = labcodesetVersion;
     this.loincVersion = loincVersion;
     this.terminologyClient = terminologyClient;
@@ -70,7 +68,7 @@ public class MaterialsResourceGenerator {
     ValueSet valueSet = new ValueSet();
     String identifier = "Labconcepts-materials-" + labcodesetVersion;
     valueSet.setId(identifier);
-    valueSet.setName(identifier).setVersion(labcodesetVersion).setTitle(LABCODESET_MATERIALS_VS_TITLE).setStatus(PublicationStatus.DRAFT)
+    valueSet.setName(identifier).setVersion(labcodesetVersion).setTitle(LABCODESET_MATERIALS_VS_TITLE).setStatus(PublicationStatus.ACTIVE)
         .setUrl(LABCODESET_MATERIALS_VS_URI).setDescription(LABCODESET_MATERIALS_VS_DESCRIPTION).setExperimental(false)
         .setPublisher(Constants.LABCODESET_RESOURCE_PUBLISHER).setCopyright(Constants.LABCODESET_RESOURCE_COPYRIGHT)
         .setLanguage(Constants.DUTCH_LANGUAGE_CODE);
@@ -82,11 +80,8 @@ public class MaterialsResourceGenerator {
     conceptSet.setSystem(Constants.SCT_CS_URI);
     conceptSet.setVersion(Constants.NL_SCT_EDITION);
 
-    for (MaterialDefinition material : pub.getMaterials().getMaterial()) {
-      if (material.getStatus() != null && !material.getStatus().equals(MaterialOrMethodStatus.ACTIVE)) {
-        System.err.println("All materials should be active, yet material " + material.getCode() + " is " + material.getStatus());
-      }
-
+    for (Map.Entry<String, Material> entry : materialsMap.entrySet()) {
+      Material material = entry.getValue();
       ConceptReferenceComponent con = new ConceptReferenceComponent();
 
       con.setCode(material.getCode().toString());
@@ -128,11 +123,6 @@ public class MaterialsResourceGenerator {
 
       if (labConcept.getMaterials() != null) {
         for (Material material : labConcept.getMaterials().getMaterial()) {
-          if (material.getStatus() != null && !material.getStatus().equals(MaterialOrMethodStatus.ACTIVE)) {
-            System.err.println("All materials should be active, yet material " + material.getRef() + " on code "
-                + labConcept.getLoincConcept().getLoincNum() + " is " + material.getStatus());
-          }
-
           SourceElementComponent element = new SourceElementComponent();
           element.setCode(labConcept.getLoincConcept().getLoincNum());
           if (labConcept.getLoincConcept().getTranslation() != null
@@ -143,7 +133,7 @@ public class MaterialsResourceGenerator {
           }
 
           TargetElementComponent targetElement = new TargetElementComponent();
-          MaterialDefinition cachedMaterial = materialsMap.get(material.getRef());
+          Material cachedMaterial = materialsMap.get(material.getCode());
           targetElement.setCode(cachedMaterial.getCode().toString());
           targetElement.setDisplay(terminologyClient.getSnomedDisplay(targetElement.getCode(), cachedMaterial.getDisplayName()));
           targetElement.setEquivalence(ConceptMapEquivalence.RELATEDTO);
