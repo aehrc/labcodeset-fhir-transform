@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
     <xs:element name="publication">
         <xs:complexType>
@@ -13,14 +12,9 @@
                         <xs:documentation>Lijst met alle actieve concepten in de Nederlandse Labcodeset</xs:documentation>
                     </xs:annotation>
                 </xs:element>
-                <xs:element name="materials" type="materialTable">
+                <xs:element name="map" type="mappingTable">
                     <xs:annotation>
-                        <xs:documentation>Lijst met gebruikte Snomed materialen</xs:documentation>
-                    </xs:annotation>
-                </xs:element>
-                <xs:element name="methods" type="methodTable">
-                    <xs:annotation>
-                        <xs:documentation>Lijst met gebruikte Snomed methoden</xs:documentation>
+                        <xs:documentation>Lijst met gebruikte LOINC System op Snomed materialen mappings</xs:documentation>
                     </xs:annotation>
                 </xs:element>
                 <xs:element name="units" type="unitTable">
@@ -38,10 +32,32 @@
                         <xs:documentation>Lijst met verwijzingen naar gebruikte nominale uitslagenlijsten</xs:documentation>
                     </xs:annotation>
                 </xs:element>
+                <xs:element ref="panels">
+                    <xs:annotation>
+                        <xs:documentation>Lijst met panels</xs:documentation>
+                    </xs:annotation>
+                </xs:element>
             </xs:sequence>
             <xs:attribute name="effectiveDate" use="required" type="xs:NMTOKEN"/>
             <xs:attribute name="user" use="optional" type="xs:NCName"/>
+            <xs:attribute name="type" use="optional" type="xs:string"/>
         </xs:complexType>
+        <xs:key name="unitId">
+            <xs:selector xpath="./units/unit"></xs:selector>
+            <xs:field xpath="@id"></xs:field>
+        </xs:key>
+        <xs:keyref refer="unitId" name="unitRef">
+            <xs:selector xpath="./lab_concepts/lab_concept/units/unit"></xs:selector>
+            <xs:field xpath="@ref"></xs:field>
+        </xs:keyref>
+        <xs:key name="vsId">
+            <xs:selector xpath="./ordinals/valueSet"></xs:selector>
+            <xs:field xpath="@id"></xs:field>
+        </xs:key>
+        <xs:keyref refer="vsId" name="vsRef">
+            <xs:selector xpath="./lab_concepts/lab_concept/outcomes/valueSet"></xs:selector>
+            <xs:field xpath="@ref"></xs:field>
+        </xs:keyref>
     </xs:element>
     <xs:element name="lab_concepts">
         <xs:annotation>
@@ -53,10 +69,8 @@
             </xs:sequence>
         </xs:complexType>
     </xs:element>
-    <xs:simpleType name="materialOrMethodStatus">
+    <xs:simpleType name="valueSetStatus">
         <xs:restriction base="xs:string">
-            <xs:enumeration value="draft"/>
-            <xs:enumeration value="active"/>
             <xs:enumeration value="final"/>
         </xs:restriction>
     </xs:simpleType>
@@ -64,8 +78,7 @@
         <xs:sequence>
             <xs:element name="loincConcept" type="loincConcept">
                 <xs:annotation>
-                    <xs:documentation>LOINC concept behorende bij dit Labcodeset concept. Bevat de Engelstalige en (waar aanwezig) Nederlandstalige
-                        assen.</xs:documentation>
+                    <xs:documentation>LOINC concept behorende bij dit Labcodeset concept. Bevat de Engelstalige en (waar aanwezig) Nederlandstalige assen.</xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:element name="materials" minOccurs="0" maxOccurs="1">
@@ -76,80 +89,68 @@
                     <xs:sequence>
                         <xs:element name="material" minOccurs="1" maxOccurs="unbounded">
                             <xs:annotation>
-                                <xs:documentation>Verwijst naar een materiaal in de materialenlijst.</xs:documentation>
+                                <xs:documentation>Verwijst naar een SNOMED materiaal uit de mapping.</xs:documentation>
                             </xs:annotation>
                             <xs:complexType>
-                                <xs:attribute name="ref" type="xs:string" use="required"/>
-                                <xs:attribute name="status" type="materialOrMethodStatus" use="required"/>
+                                <xs:attribute name="code" type="xs:string" use="required"/>
+                                <xs:attribute name="displayName" type="xs:string" use="required"/>
                             </xs:complexType>
                         </xs:element>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="methods" minOccurs="0" maxOccurs="1">
+            <xs:element name="outcomes" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
-                    <xs:documentation>Methoden die gebruikt kunnen worden bij dit concept.</xs:documentation>
+                    <xs:documentation>Bevat de lijst van mogelijke nominale of ordinale uitkomsten.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:choice minOccurs="0">
+                        <xs:element ref="refset">
+                            <xs:annotation>
+                                <xs:documentation>Verwijst naar een referentieset in SNOMED. U kunt deze vinden in de Nederlandse SNOMED-editie met behulp van het gegeven conceptId.</xs:documentation>
+                            </xs:annotation>
+                        </xs:element>
+                        <xs:element name="valueSet">
+                            <xs:annotation>
+                                <xs:documentation>"Verwijst naar de lijst van mogelijke ordinale uitkomsten."</xs:documentation>
+                            </xs:annotation>
+                            <xs:complexType>
+                                <xs:attribute name="ref" type="xs:string"/>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:choice>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="units" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Eenheden (units) die gebruikt worden bij dit concept.</xs:documentation>
                 </xs:annotation>
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="method" minOccurs="1" maxOccurs="unbounded">
+                        <xs:element name="unit">
                             <xs:annotation>
-                                <xs:documentation>Verwijst naar een methode in de methodenlijst.</xs:documentation>
+                                <xs:documentation>Verwijst naar een eenheid (unit) in de eenhedenlijst.</xs:documentation>
                             </xs:annotation>
                             <xs:complexType>
-                                <xs:attribute name="ref" type="xs:string" use="required"/>
-                                <xs:attribute name="status" type="materialOrMethodStatus" use="required"/>
+                                <xs:attribute name="ref" type="xs:string"/>
                             </xs:complexType>
                         </xs:element>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:choice>
-                <xs:choice minOccurs="0" maxOccurs="1">
-                    <xs:element name="outcomes">
-                        <xs:annotation>
-                            <xs:documentation>Bevat de lijst van mogelijke nominale of ordinale uitkomsten.</xs:documentation>
-                        </xs:annotation>
-                        <xs:complexType>
-                            <xs:choice minOccurs="0">
-                                <xs:element ref="refset">
-                                    <xs:annotation>
-                                        <xs:documentation>Verwijst naar een referentieset in SNOMED. U kunt deze vinden in de Nederlandse SNOMED-editie met behulp van het gegeven conceptId.</xs:documentation>
-                                    </xs:annotation>
-                                </xs:element>
-                                <xs:element name="valueSet">
-                                    <xs:annotation>
-                                        <xs:documentation>"Verwijst naar de lijst van mogelijke ordinale uitkomsten."</xs:documentation>
-                                    </xs:annotation>
-                                    <xs:complexType>
-                                        <xs:attribute name="ref" type="xs:string"/>
-                                    </xs:complexType>
-                                </xs:element>
-                            </xs:choice>
-                        </xs:complexType>
-                    </xs:element>
-                    <xs:element name="units">
-                        <xs:annotation>
-                            <xs:documentation>Eenheden (units) die gebruikt worden bij dit concept.</xs:documentation>
-                        </xs:annotation>
-                        <xs:complexType>
-                            <xs:sequence>
-                                <xs:element name="unit">
-                                    <xs:annotation>
-                                        <xs:documentation>Verwijst naar een eenheid (unit) in de eenhedenlijst.</xs:documentation>
-                                    </xs:annotation>
-                                    <xs:complexType>
-                                        <xs:attribute name="ref" type="xs:string"/>
-                                    </xs:complexType>
-                                </xs:element>
-                            </xs:sequence>
-                        </xs:complexType>
-                    </xs:element>
-                </xs:choice>
-            </xs:choice>
-            <xs:element name="comment" minOccurs="0" type="xs:string">
+            <xs:element name="retired-reason" type="xs:string" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
-                    <xs:documentation>Commentaar - m.n. tijdens ontwikkeling</xs:documentation>
+                    <xs:documentation>Reden dat een concept status 'retired' heeft gekregen.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="retired-replacement" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Eventuele vervangende concepten voor een concept dat status 'retired' heeft gekregen.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="releasenote" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Een release note met vrije toelichtende tekst bij een concept.</xs:documentation>
                 </xs:annotation>
             </xs:element>
         </xs:sequence>
@@ -189,7 +190,7 @@
         <xs:sequence>
             <xs:element name="component" type="loincAxis" minOccurs="1" maxOccurs="1">
                 <xs:annotation>
-                    <xs:documentation></xs:documentation>
+                    <xs:documentation>De LOINC-as component.</xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:element name="property" type="loincAxis" minOccurs="0" maxOccurs="1">
@@ -199,7 +200,7 @@
             </xs:element>
             <xs:element name="timing" type="loincAxis" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
-                    <xs:documentation>De LOINC-as timing.</xs:documentation>
+                    <xs:documentation>De LOINC-as timing ofwel tijdsduur.</xs:documentation>
                 </xs:annotation>
             </xs:element>
             <xs:element name="system" type="loincAxis" minOccurs="0" maxOccurs="1">
@@ -229,8 +230,18 @@
             </xs:element>
             <xs:element name="longName" type="loincAxis" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
-                    <xs:documentation>Bevat de Long Common Name (LCN) van een LOINC-concept. Naast name heeft het attributen count (het aantal tokens) en length (de totale lengte). Dit is de naam waarmee een LOINC-concept getoond dient te worden.</xs:documentation>
+                    <xs:documentation>Bevat de Long Common Name (LCN) van een LOINC-concept. Dit is de naam waarmee een LOINC-concept getoond dient te worden.</xs:documentation>
                 </xs:annotation>
+            </xs:element>
+            <xs:element name="map" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>Vervangend LOINC concept voor DISCOURAGED of DEPRECATED concepten. Attributen "from" (oude concept), "to" (nieuwe concept) en "comment" (toelichting).</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:attribute name="from"/>
+                    <xs:attribute name="to"/>
+                    <xs:attribute name="comment"/>
+                </xs:complexType>
             </xs:element>
             <xs:element name="panelType" type="loincAxis" minOccurs="0" maxOccurs="1">
                 <xs:annotation>
@@ -258,7 +269,7 @@
                 <xs:complexType>
                     <xs:simpleContent>
                         <xs:extension base="xs:anyURI">
-                            <xs:attribute name="href" type="xs:anyURI"/>                            
+                            <xs:attribute name="href" type="xs:anyURI"/>
                         </xs:extension>
                     </xs:simpleContent>
                 </xs:complexType>
@@ -269,6 +280,7 @@
         <xs:restriction base="xs:string">
             <xs:enumeration value="ACTIVE"/>
             <xs:enumeration value="DEPRECATED"/>
+            <xs:enumeration value="DISCOURAGED"/>
         </xs:restriction>
     </xs:simpleType>
     <xs:simpleType name="labConceptStatus">
@@ -279,14 +291,10 @@
     </xs:simpleType>
     <xs:complexType name="loincAxis">
         <xs:simpleContent>
-            <xs:extension base="xs:string">
-                <xs:attribute name="name" use="optional"/>
-                <xs:attribute name="count" use="optional"/>
-                <xs:attribute name="length" use="optional"/>
-            </xs:extension>
+            <xs:extension base="xs:string"/>
         </xs:simpleContent>
     </xs:complexType>
-    <xs:complexType name="materialTable">
+    <xs:complexType name="mappingTable">
         <xs:sequence>
             <xs:element name="material" type="materialDefinition" maxOccurs="unbounded"/>
         </xs:sequence>
@@ -295,77 +303,21 @@
         <xs:annotation>
             <xs:documentation>Een materiaal, d.w.z. een monster (specimen) waarin een bepaling uitgevoerd kan worden, bv. urine.</xs:documentation>
         </xs:annotation>
-        <xs:sequence>
-            <xs:element name="name" type="xs:string" minOccurs="1" maxOccurs="1">
-                <xs:annotation>
-                    <xs:documentation>De Nederlandse weergavenaam.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="root" type="snomedConcept" minOccurs="0" maxOccurs="1">
-                <xs:annotation>
-                    <xs:documentation>Het ouderconcept in SNOMED.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="substance" type="snomedConcept" minOccurs="0" maxOccurs="1">
-                <xs:annotation>
-                    <xs:documentation>De substantie die in SNOMED aan dit materiaal gekoppeld is, bv. ‘urine’ voor het materiaal ‘midstream-urine’.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="topo" type="snomedConcept" minOccurs="0" maxOccurs="1">
-                <xs:annotation>
-                    <xs:documentation>De herkomst van het materiaal, bv. ‘eye proper’ voor ‘eye fluid sample’.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="morph" type="snomedConcept" minOccurs="0" maxOccurs="1">
-                <xs:annotation>
-                    <xs:documentation>De morfologische afwijking waaruit het materiaal afkomstig is, bv. een wond of abces.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="ident" type="snomedConcept" minOccurs="0" maxOccurs="1">
-                <xs:annotation>
-                    <xs:documentation>Wanneer het materiaal in feite een object is, bv. een kathetertip, wordt dit object op deze as gespecificeerd.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="proc" type="snomedConcept" minOccurs="0" maxOccurs="1">
-                <xs:annotation>
-                    <xs:documentation>De verrichting waarmee het materiaal verkregen is, bv. een uitstrijk.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-            <xs:element name="references" type="references" minOccurs="0">
-                <xs:annotation>
-                    <xs:documentation>Verwijzingen naar externe websites met informatie over dit concept.</xs:documentation>
-                </xs:annotation>
-            </xs:element>
-        </xs:sequence>
-        <xs:attribute name="code" type="xs:integer"/>
-        <xs:attribute name="displayName" type="xs:string"/>
-        <xs:attribute name="id" type="xs:string"/>
-        <xs:attribute name="status" use="required" type="materialOrMethodStatus"/>
-    </xs:complexType>
-    <xs:complexType name="snomedConcept">
-        <xs:simpleContent>
-            <xs:extension base="xs:string">
-                <xs:attribute name="code" type="xs:integer"/>
-                <xs:attribute name="displayName"/>
-            </xs:extension>
-        </xs:simpleContent>
-    </xs:complexType>
-    <xs:complexType name="methodTable">
-        <xs:annotation>
-            <xs:documentation>Methodes dienen nog nader gedefinieerd te worden.</xs:documentation>
-        </xs:annotation>
-        <xs:sequence>
-            <xs:element name="method" maxOccurs="unbounded">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:any processContents="skip" maxOccurs="unbounded"/>
-                    </xs:sequence>
-                    <xs:attribute name="id" type="xs:integer"/>
-                    <xs:attribute name="status" type="xs:NCName"/>
-                </xs:complexType>
-            </xs:element>
-        </xs:sequence>
-        <xs:anyAttribute/>
+        <xs:attribute name="code" type="xs:integer">
+            <xs:annotation>
+                <xs:documentation>De SNOMED code.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="displayName" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>De SNOMED weergavenaam.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+        <xs:attribute name="system" type="xs:string">
+            <xs:annotation>
+                <xs:documentation>Het LOINC System.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
     </xs:complexType>
     <xs:complexType name="unitTable">
         <xs:sequence>
@@ -394,6 +346,7 @@
             </xs:element>
         </xs:sequence>
         <xs:attribute name="id" type="xs:string"/>
+        <xs:attribute name="status" type="xs:string"/>
     </xs:complexType>
     <xs:element name="refset">
         <xs:annotation>
@@ -422,7 +375,7 @@
                             </xs:annotation>
                             <xs:complexType>
                                 <xs:sequence>
-                                    <xs:element name="desc">
+                                    <xs:element name="desc" minOccurs="0">
                                         <xs:complexType>
                                             <xs:simpleContent>
                                                 <xs:extension base="xs:string">
@@ -472,6 +425,64 @@
         <xs:attribute name="effectiveDate" type="xs:dateTime"/>
         <xs:attribute name="id" type="xs:string"/>
         <xs:attribute name="name" type="xs:string"/>
-        <xs:attribute name="statusCode" type="materialOrMethodStatus"/>
+        <xs:attribute name="statusCode" type="valueSetStatus"/>
+        <xs:attribute name="versionLabel"/>
+    </xs:complexType>
+    <xs:element name="panels">
+        <xs:annotation>
+            <xs:documentation>Lijst met alle panels in de NL Labcodeset.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element maxOccurs="unbounded" name="loincConcept" type="panelConcept"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:complexType name="panelConcept">
+        <xs:annotation>
+            <xs:documentation>Type van de LOINC concepten in een panel. 
+                Ieder loincConcept in een panel verwijst naar een LOINC concept uit de NL Labcodeset.</xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="SEQUENCE" type="xs:integer" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Lijst met alle NL Labcodeset concepten</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="LoincName" type="xs:string" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Korte naam van het concept. Alleen voor de leesbaarheid van deze lijst - gebruik de naam uit het hele LOINC concept in uw toepassing.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ObservationRequiredInPanel" minOccurs="0" maxOccurs="1" type="xs:NCName">
+                <xs:annotation>
+                    <xs:documentation>Een eventuele aanduiding de bepaling binnen het panel verplicht, optioneel of voorwaardelijk is. 
+                        Waarden: R (Required), O (Optional) of C (Conditional</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="ConditionForInclusion" minOccurs="0" maxOccurs="1" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>Een eventuele tekstuele beschrijving van voorwaarde voor inclusie.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="AnswerCardinality" minOccurs="0" maxOccurs="1" type="xs:string">
+                <xs:annotation>
+                    <xs:documentation>Een eventuele tekstuele beschrijving van voorwaarde voor inclusie.</xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="members" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>Een lijst met de leden van het panel. Dit kunnen zelf weer panels zijn, of individuele testen.</xs:documentation>
+                </xs:annotation>
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" maxOccurs="unbounded" name="loincConcept" type="panelConcept"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:sequence>
+        <xs:attribute name="loinc_num" use="required" type="xs:NMTOKEN"/>
+        <xs:attribute name="panelMember" type="xs:NCName"/>
+        <xs:attribute name="type" type="xs:NCName"/>
     </xs:complexType>
 </xs:schema>

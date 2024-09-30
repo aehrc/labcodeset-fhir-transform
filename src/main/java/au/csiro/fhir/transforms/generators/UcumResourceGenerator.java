@@ -25,7 +25,6 @@ import org.hl7.fhir.r4.model.ValueSet.ConceptSetComponent;
 import org.hl7.fhir.r4.model.ValueSet.ValueSetComposeComponent;
 import au.csiro.fhir.transform.xml.nl.labcodeset.LabConcept;
 import au.csiro.fhir.transform.xml.nl.labcodeset.LabConcept.Units;
-import au.csiro.fhir.transform.xml.nl.labcodeset.MaterialDefinition;
 import au.csiro.fhir.transform.xml.nl.labcodeset.Publication;
 import au.csiro.fhir.transform.xml.nl.labcodeset.UnitDefinition;
 import au.csiro.fhir.transforms.utility.Constants;
@@ -56,10 +55,8 @@ public class UcumResourceGenerator {
    * @param terminologyClient {@link TerminologyClient} that can be used to lookup details of LOINC
    *        codes
    * @param unitMap Map of the unit references and their details in the Labcodeset file
-   * @param materialsMap Map of the materials references and their details in the Labcodeset file
    */
-  public UcumResourceGenerator(String labcodesetVersion, String loincVersion, Map<String, UnitDefinition> unitMap,
-      Map<String, MaterialDefinition> materialsMap) {
+  public UcumResourceGenerator(String labcodesetVersion, String loincVersion, Map<String, UnitDefinition> unitMap) {
     this.labcodesetVersion = labcodesetVersion;
     this.loincVersion = loincVersion;
     this.unitMap = unitMap;

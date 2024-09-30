@@ -23,6 +23,9 @@ import org.hl7.fhir.r4.model.ConceptMap;
 import org.hl7.fhir.r4.model.MetadataResource;
 import org.hl7.fhir.r4.model.Resource;
 import org.hl7.fhir.r4.model.ValueSet;
+
+import au.csiro.fhir.transform.xml.nl.labcodeset.LabConcept;
+import au.csiro.fhir.transform.xml.nl.labcodeset.LabConcept.Materials.Material;
 import au.csiro.fhir.transform.xml.nl.labcodeset.MaterialDefinition;
 import au.csiro.fhir.transform.xml.nl.labcodeset.Publication;
 import au.csiro.fhir.transform.xml.nl.labcodeset.UnitDefinition;
@@ -56,7 +59,7 @@ public class LabcodesetResourceGenerator {
   private Publication pub;
   private File outputDir;
   private String labcodesetVersion;
-  private Map<String, MaterialDefinition> materialMap = new HashMap<>();
+  private Map<String, Material> materialMap = new HashMap<>();
   private Map<String, UnitDefinition> unitMap = new HashMap<>();
 
   private TerminologyClient terminologyClient;
@@ -93,8 +96,10 @@ public class LabcodesetResourceGenerator {
 
     this.labcodesetVersion = pub.getEffectiveDate().split("-")[0];
 
-    for (MaterialDefinition material : pub.getMaterials().getMaterial()) {
-      materialMap.put(material.getId(), material);
+    for (LabConcept concept : pub.getLabConcepts().getLabConcept()) {
+      for (Material material : concept.getMaterials().getMaterial()) {
+        materialMap.put(material.getCode(), material);
+      }
     }
 
     for (UnitDefinition unit : pub.getUnits().getUnit()) {
@@ -150,7 +155,7 @@ public class LabcodesetResourceGenerator {
   }
 
   private void generateUcumResources(Bundle bundle) {
-    UcumResourceGenerator ucumResourceGenerator = new UcumResourceGenerator(labcodesetVersion, loincVersion, unitMap, materialMap);
+    UcumResourceGenerator ucumResourceGenerator = new UcumResourceGenerator(labcodesetVersion, loincVersion, unitMap);
 
     CodeSystem ucumCodeSystem = ucumResourceGenerator.createUcumCodeSystem(pub);
     outputResource(ucumCodeSystem, UCUM_CS_FILENAME);
@@ -165,7 +170,7 @@ public class LabcodesetResourceGenerator {
 
   private void generateLoincResources(Bundle bundle) {
     LoincResourceGenerator loincResourceGenerator =
-        new LoincResourceGenerator(labcodesetVersion, loincVersion, terminologyClient, unitMap, materialMap);
+        new LoincResourceGenerator(labcodesetVersion, loincVersion, terminologyClient, unitMap);
 
     CodeSystem loincSupplement = loincResourceGenerator.createLoincCodeSystemSupplement(pub);
     bundle.addEntry().setResource(loincSupplement);

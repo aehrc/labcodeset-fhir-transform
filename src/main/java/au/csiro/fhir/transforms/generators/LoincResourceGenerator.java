@@ -34,8 +34,6 @@ import au.csiro.fhir.transform.xml.nl.labcodeset.LabConcept.Materials.Material;
 import au.csiro.fhir.transform.xml.nl.labcodeset.LabConcept.Units;
 import au.csiro.fhir.transform.xml.nl.labcodeset.LoincAxis;
 import au.csiro.fhir.transform.xml.nl.labcodeset.LoincConcept;
-import au.csiro.fhir.transform.xml.nl.labcodeset.MaterialDefinition;
-import au.csiro.fhir.transform.xml.nl.labcodeset.MaterialOrMethodStatus;
 import au.csiro.fhir.transform.xml.nl.labcodeset.Publication;
 import au.csiro.fhir.transform.xml.nl.labcodeset.UnitDefinition;
 import au.csiro.fhir.transforms.utility.Constants;
@@ -73,7 +71,6 @@ public class LoincResourceGenerator {
   private String loincVersion;
   private TerminologyClient terminologyClient;
   private Map<String, UnitDefinition> unitMap;
-  private Map<String, MaterialDefinition> materialsMap;
 
   /**
    * @param labcodesetVersion version of the Labcodeset being transformed
@@ -81,15 +78,13 @@ public class LoincResourceGenerator {
    * @param terminologyClient {@link TerminologyClient} that can be used to lookup details of LOINC
    *        codes
    * @param unitMap Map of the unit references and their details in the Labcodeset file
-   * @param materialsMap Map of the materials references and their details in the Labcodeset file
    */
   public LoincResourceGenerator(String labcodesetVersion, String loincVersion, TerminologyClient terminologyClient,
-      Map<String, UnitDefinition> unitMap, Map<String, MaterialDefinition> materialsMap) {
+      Map<String, UnitDefinition> unitMap) {
     this.labcodesetVersion = labcodesetVersion;
     this.loincVersion = loincVersion;
     this.terminologyClient = terminologyClient;
     this.unitMap = unitMap;
-    this.materialsMap = materialsMap;
   }
 
   /**
@@ -163,20 +158,9 @@ public class LoincResourceGenerator {
   private void setMaterialProperties(Materials materials, ConceptDefinitionComponent concept) {
     if (materials != null && materials.getMaterial() != null) {
       for (Material material : materials.getMaterial()) {
-        if (material.getStatus() != null && !material.getStatus().equals(MaterialOrMethodStatus.ACTIVE)) {
-          System.err.println("All materials should be active, yet material " + material.getRef() + " on code " + concept.getCode() + " is "
-              + material.getStatus());
-        }
-
-        MaterialDefinition materialDefinition = materialsMap.get(material.getRef());
-
-        if (materialDefinition != null) {
-          concept.addProperty(new ConceptPropertyComponent(new CodeType(LABCODESET_MATERIAL_PROPERTY),
-              new Coding(Constants.SCT_CS_URI, materialDefinition.getCode().toString(),
-                  terminologyClient.getSnomedDisplay(materialDefinition.getCode().toString(), materialDefinition.getDisplayName()))));
-        } else {
-          System.err.println("Could not find material for reference " + material.getRef() + " - omitting this property!");
-        }
+        concept.addProperty(new ConceptPropertyComponent(new CodeType(LABCODESET_MATERIAL_PROPERTY),
+            new Coding(Constants.SCT_CS_URI, material.getCode().toString(),
+                terminologyClient.getSnomedDisplay(material.getCode().toString(), material.getDisplayName()))));
       }
     }
   }
